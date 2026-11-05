@@ -79,9 +79,21 @@ refs:
 Файл вотчерится, значение подхватывается без перезапуска. Токен резолвится на
 каждую операцию, поэтому отзыв или замена действует немедленно.
 
-Минимальные права fine-grained PAT: `Metadata: Read` (обязательно),
-`Contents: Read and write` (без write не работает `github_file_write`),
-`Issues: Read/Write`, `Pull requests: Read/Write`, `Commit statuses: Read`.
+Минимальные права fine-grained PAT — всё, что нужно плагину, без административных прав:
+
+| Право (Repository permissions) | Уровень | Что включает |
+|---|---|---|
+| `Metadata` | Read | обязателен всегда: сам доступ к репозиторию |
+| `Contents` | Read and write | чтение файлов и коммиты: `github_file`, `github_file_write`, `github_push_files`, `github_release_create`, поиск кода |
+| `Issues` | Read and write | issue: список, чтение, комментарии, создание, закрытие |
+| `Pull requests` | Read and write | pull request: чтение, файлы, ревью, комментарии, merge |
+| `Commit statuses` | Read | статусы коммитов (нужно, только если нужны проверки) |
+| `Checks` | Read | CI-проверки pull request: `github_review` |
+
+`Administration` не нужен. Он требуется только для однократного создания
+репозитория (`github_repo_create`, `POST /user/repos`) вместе с
+`Repository access → All repositories` — после создания его можно снять и
+вернуть доступ «только выбранные репозитории».
 
 Если токен уже создан с `Contents → Read`, перевыпускать его не нужно: открой
 токен на GitHub, поставь `Repository permissions → Contents → Read and write`
