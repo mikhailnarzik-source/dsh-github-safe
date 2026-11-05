@@ -62,7 +62,9 @@ window.__ModuleLoader__.load({
       permPullsUse: 'pull requests: read, files, reviews, comments, merge',
       permStatusesUse: 'commit statuses (only if you need status checks)',
       permChecksUse: 'CI checks of a pull request: github_review',
-      permNote: 'Administration is not needed. It is required only for the one-time repository creation (github_repo_create); drop it afterwards.',
+      permAdminUse: 'create new repositories: github_repo_create',
+      permAccessNote: 'Repository access: All repositories — otherwise new repositories are invisible and creation is refused.',
+      permNote: 'Administration is needed only to create repositories. Without it every other tool works, but creating a repository fails.',
       noteExisting: 'Already created the token with Contents → Read? Open it, set Repository permissions → Contents → Read and write, save. The token value does not change — no need to reissue it, the plugin picks up the new rights as is.',
       warnTitle: 'Do not grant',
       warnBody: 'Administration, Secrets, Collaborators, Actions (write), Webhooks, Deploy keys. The plugin has no endpoint to use them — it cannot change account settings, members, or delete anything.',
@@ -112,7 +114,9 @@ window.__ModuleLoader__.load({
       permPullsUse: 'pull request: чтение, файлы, ревью, комментарии, merge',
       permStatusesUse: 'статусы коммитов (нужно, только если нужны проверки)',
       permChecksUse: 'CI-проверки pull request: github_review',
-      permNote: 'Administration не нужен. Он требуется только для однократного создания репозитория (github_repo_create) — после создания его можно снять.',
+      permAdminUse: 'создание новых репозиториев: github_repo_create',
+      permAccessNote: 'Repository access: All repositories — иначе новые репозитории не видны, а создание не сработает.',
+      permNote: 'Administration нужен только для создания репозиториев. Без него работают все остальные инструменты, но создать репозиторий не получится.',
       noteExisting: 'Токен уже создан с Contents → Read? Открой его, поменяй Repository permissions → Contents → Read and write и сохрани. Сам токен при этом не меняется — перевыпускать не нужно, плагин сразу увидит новые права.',
       warnTitle: 'Не выдавай',
       warnBody: 'Administration, Secrets, Collaborators, Actions (write), Webhooks, Deploy keys. У плагина нет эндпоинтов, где они нужны — он не может менять настройки аккаунта, участников или что-то удалять.',
@@ -422,6 +426,7 @@ window.__ModuleLoader__.load({
                   ['Pull requests', 'Read and write', t('permPullsUse')],
                   ['Commit statuses', 'Read', t('permStatusesUse')],
                   ['Checks', 'Read', t('permChecksUse')],
+                  ['Administration', 'Read and write', t('permAdminUse')],
                 ].map(([name, level, use], index) =>
                   h(
                     'tr',
@@ -434,6 +439,7 @@ window.__ModuleLoader__.load({
               ),
             ),
             h('span', { style: S.hint }, t('permNote')),
+            h('span', { style: S.hint }, t('permAccessNote')),
             h('span', { style: S.hintNote }, t('noteExisting')),
             h('a', {
               style: S.link,

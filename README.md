@@ -89,11 +89,12 @@ refs:
 | `Pull requests` | Read and write | pull request: чтение, файлы, ревью, комментарии, merge |
 | `Commit statuses` | Read | статусы коммитов (нужно, только если нужны проверки) |
 | `Checks` | Read | CI-проверки pull request: `github_review` |
+| `Administration` | Read and write | создание новых репозиториев: `github_repo_create` |
 
-`Administration` не нужен. Он требуется только для однократного создания
-репозитория (`github_repo_create`, `POST /user/repos`) вместе с
-`Repository access → All repositories` — после создания его можно снять и
-вернуть доступ «только выбранные репозитории».
+`Repository access` → **All repositories**: иначе новые репозитории не видны
+плагину, а создание не сработает. `Administration` нужен только для создания
+репозиториев — без него работают все остальные инструменты, но создать новый
+репозиторий не получится.
 
 Если токен уже создан с `Contents → Read`, перевыпускать его не нужно: открой
 токен на GitHub, поставь `Repository permissions → Contents → Read and write`

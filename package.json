@@ -1,6 +1,6 @@
 {
   "name": "@local/github-safe",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "private": true,
   "type": "module",
   "description": "GitHub tools for DSH behind a deny-by-default allowlist: repository content only, no account, profile, organisation, or access management, no DELETE. Ships a settings card with a masked token field and a PAT recipe.",
