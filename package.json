@@ -1,9 +1,25 @@
 {
-  "name": "@local/github-safe",
-  "version": "1.7.0",
-  "private": true,
+  "name": "dsh-github-safe",
+  "version": "1.0.0",
+  "description": "GitHub tools for DeepSeek Harness behind a deny-by-default allowlist: repository content only, no account, profile, organisation or access management, no DELETE.",
   "type": "module",
-  "description": "GitHub tools for DSH behind a deny-by-default allowlist: repository content only, no account, profile, organisation, or access management, no DELETE. Ships a settings card with a masked token field and a PAT recipe.",
+  "license": "MIT",
+  "author": "mikhailnarzik-source",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "github",
+    "cordis"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mikhailnarzik-source/dsh-github-safe.git"
+  },
+  "homepage": "https://github.com/mikhailnarzik-source/dsh-github-safe#readme",
+  "bugs": {
+    "url": "https://github.com/mikhailnarzik-source/dsh-github-safe/issues"
+  },
   "exports": {
     ".": "./index.js",
     "./client": "./client.js"
@@ -13,8 +29,15 @@
     "client.js",
     "lib",
     "cordis.patch.yml",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
