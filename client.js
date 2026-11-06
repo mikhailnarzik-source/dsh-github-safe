@@ -338,12 +338,16 @@ window.__ModuleLoader__.load({
         }, [notice]);
 
         if (view === 'summary') {
+          const update = snapshot.update ?? { status: 'unknown' };
           return h(
             'span',
-            { style: { display: 'inline-flex', gap: 8, alignItems: 'center', fontSize: 12.5 } },
+            { style: { display: 'inline-flex', gap: 8, alignItems: 'center', fontSize: 12.5, flexWrap: 'wrap' } },
             h('span', null, t('pageTitle')),
             h('span', { style: snapshot.configured ? S.badgeOn : S.badgeOff },
               snapshot.configured ? t('setBadge') : t('unsetBadge')),
+            update.status === 'behind'
+              ? h('span', { style: S.statusWait }, `${t('updateAvailable')}: ${short(update.installed)} → ${short(update.latest)}`)
+              : null,
           );
         }
 
