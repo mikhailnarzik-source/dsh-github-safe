@@ -13,7 +13,8 @@
 
 import { createClient, GithubError } from './lib/http.js'
 import { createTools } from './lib/tools.js'
-import { checkForUpdate, formatUpdateState } from './lib/update-check.js'
+import { checkForUpdate, formatUpdateState, getUpdateState } from './lib/update-check.js'
+import { startUpdate, refreshBeforeUpdate } from './lib/self-update.js'
 
 export const name = 'github-safe'
 
@@ -22,6 +23,9 @@ export const inject = ['tools', 'credentials', 'connection', 'systemPrompt']
 
 /** Route the settings card calls to prove the stored token works. */
 const VERIFY_PATH = '/api/github-safe/verify'
+
+/** Route the settings card calls to reinstall this plugin from GitHub. */
+const UPDATE_PATH = '/api/github-safe/update'
 
 /** Prompt variable carrying the live token state into every session. */
 const TOKEN_VARIABLE = 'github_token_state'
@@ -135,16 +139,16 @@ export function apply(ctx) {
   ctx.systemPrompt.section({ name: 'tool:github-safe', order: 900, text: PROMPT_SECTION })
 
   // Self-check on load: compare this installed commit with `main` on GitHub.
-  // It only reports — it never replaces its own code, because that would mean
-  // running unreviewed bytes and would still need a restart to take effect.
-  void checkForUpdate(async () => {
+  // It only reports; applying an update is a separate, explicit click.
+  const resolveToken = async () => {
     try {
       const hit = await ctx.credentials.resolve('GITHUB_TOKEN')
       return hit?.value
     } catch {
       return undefined
     }
-  })
+  }
+  void checkForUpdate(resolveToken)
 
 
   for (const tool of createTools(client)) {
@@ -169,6 +173,26 @@ export function apply(ctx) {
     requestBody: 'buffered',
     fetch: () => verifyToken(client),
   })
+
+  // One explicit click may reinstall this plugin from GitHub. The target spec
+  // is fixed in code, so the route cannot install anything else.
+  ctx.connection.fetch.register({
+    path: UPDATE_PATH,
+    methods: ['POST'],
+    requestBody: 'buffered',
+    fetch: async () => {
+      const fresh = await refreshBeforeUpdate(resolveToken)
+      const result = startUpdate(ctx, resolveToken)
+      return json({
+        ok: result.started,
+        code: result.started ? 'scheduled' : 'no-op',
+        message: result.reason,
+        installed: fresh.installed,
+        latest: fresh.latest,
+        updateStatus: fresh.status,
+      })
+    },
+  })
 }
 
 /**
@@ -178,6 +202,7 @@ export function apply(ctx) {
  *   so the card reads a verdict rather than a transport failure.
  */
 async function verifyToken(client) {
+  const update = updateSnapshot()
   try {
     const status = await client.status()
     if (status.ok) {
@@ -186,19 +211,34 @@ async function verifyToken(client) {
         code: 'accepted',
         remaining: status.rateLimit.remaining,
         resetAt: status.rateLimit.resetAt,
+        update,
       })
     }
     if (status.status === 401) {
-      return json({ ok: false, code: 'rejected', message: 'GitHub отклонил токен (401): проверьте срок действия и права.' })
+      return json({ ok: false, code: 'rejected', message: 'GitHub отклонил токен (401): проверьте срок действия и права.', update })
     }
-    return json({ ok: false, code: 'unexpected', message: `GitHub ответил ${status.status}.` })
+    return json({ ok: false, code: 'unexpected', message: `GitHub ответил ${status.status}.`, update })
   } catch (error) {
     if (error instanceof GithubError) {
-      if (error.code === 'no-token') return json({ ok: false, code: 'missing', message: error.message })
-      if (error.status === 401) return json({ ok: false, code: 'rejected', message: 'GitHub отклонил токен (401): проверьте срок действия и права.' })
-      return json({ ok: false, code: 'network', message: error.message })
+      if (error.code === 'no-token') return json({ ok: false, code: 'missing', message: error.message, update })
+      if (error.status === 401) return json({ ok: false, code: 'rejected', message: 'GitHub отклонил токен (401): проверьте срок действия и права.', update })
+      return json({ ok: false, code: 'network', message: error.message, update })
     }
-    return json({ ok: false, code: 'network', message: 'Не удалось связаться с GitHub.' })
+    return json({ ok: false, code: 'network', message: 'Не удалось связаться с GitHub.', update })
+  }
+}
+
+/**
+ * Serialisable view of the startup update check for the settings card.
+ * @returns `{ status, installed, latest, message }`.
+ */
+function updateSnapshot() {
+  const state = getUpdateState()
+  return {
+    status: state.status,
+    installed: state.installed,
+    latest: state.latest,
+    message: state.message,
   }
 }
 

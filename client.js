@@ -20,6 +20,8 @@ window.__ModuleLoader__.load({
     const NS = 'githubSafe';
     const REF = 'GITHUB_TOKEN';
     const VERIFY_PATH = '/api/github-safe/verify';
+    const UPDATE_PATH = '/api/github-safe/update';
+    const short = (sha) => (sha === null || sha === undefined ? '?' : String(sha).slice(0, 7));
 
     const en = {
       title: 'GitHub',
@@ -42,6 +44,14 @@ window.__ModuleLoader__.load({
       unreachable: 'Could not reach GitHub',
       again: 'Check again',
       quota: 'Requests left:',
+      updateTitle: 'Plugin update',
+      updateCurrent: 'up to date',
+      updateAvailable: 'Update available',
+      updateUnknown: 'state unknown',
+      updateButton: 'Update',
+      updateStarting: 'Updating…',
+      updateScheduled: 'Update started. Restart DSH to load the new version.',
+      updateNoop: 'No update needed.',
       storedIn: 'Stored in the DSH credential store (refs.GITHUB_TOKEN), not in the plugin configuration.',
       readonly: 'This deployment stores credentials read-only.',
       setBadge: 'configured',
@@ -94,6 +104,14 @@ window.__ModuleLoader__.load({
       unreachable: 'GitHub не ответил',
       again: 'Проверить снова',
       quota: 'Осталось запросов:',
+      updateTitle: 'Обновление плагина',
+      updateCurrent: 'актуально',
+      updateAvailable: 'Доступно обновление',
+      updateUnknown: 'состояние неизвестно',
+      updateButton: 'Обновить',
+      updateStarting: 'Обновляем…',
+      updateScheduled: 'Обновление запущено. Перезапустите DSH, чтобы загрузить новую версию.',
+      updateNoop: 'Обновление не требуется.',
       storedIn: 'Хранится в хранилище секретов DSH (refs.GITHUB_TOKEN), а не в конфигурации плагина.',
       readonly: 'В этом окружении хранилище секретов доступно только для чтения.',
       setBadge: 'настроен',
@@ -186,6 +204,9 @@ window.__ModuleLoader__.load({
         writable: true,
         loading: true,
         check: { phase: 'idle', message: '', remaining: null },
+        update: { status: 'unknown', installed: null, latest: null, message: '' },
+        updating: false,
+        updateNotice: '',
       };
 
       /** Publish a new snapshot to every mounted card. */
@@ -208,6 +229,7 @@ window.__ModuleLoader__.load({
             body: '{}',
           });
           const payload = await response.json().catch(() => null);
+          if (payload?.update !== undefined) setState({ update: payload.update });
           if (payload?.ok === true) {
             setState({ check: { phase: 'accepted', message: '', remaining: payload.remaining ?? null } });
             return;
@@ -217,6 +239,30 @@ window.__ModuleLoader__.load({
           setState({ check: { phase, message: payload?.message ?? '', remaining: null } });
         } catch (error) {
           setState({ check: { phase: 'unreachable', message: String(error?.message ?? ''), remaining: null } });
+        }
+      };
+
+      /**
+       * Ask the host to reinstall this plugin from GitHub. The host talks to the
+       * plugin manager; the page only learns whether the work was scheduled.
+       */
+      const runUpdate = async () => {
+        if (state.updating) return;
+        setState({ updating: true, updateNotice: '' });
+        try {
+          const response = await fetch(UPDATE_PATH, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'content-type': 'application/json' },
+            body: '{}',
+          });
+          const payload = await response.json().catch(() => null);
+          setState({
+            updating: false,
+            updateNotice: payload?.ok === true ? t('updateScheduled') : (payload?.message ?? t('updateNoop')),
+          });
+        } catch (error) {
+          setState({ updating: false, updateNotice: String(error?.message ?? '') });
         }
       };
 
@@ -395,6 +441,31 @@ window.__ModuleLoader__.load({
             ),
             snapshot.writable ? null : h('span', { style: S.error }, t('readonly')),
             notice.length > 0 ? h('span', { style: S.hint }, notice) : null,
+            h(
+              'div',
+              { style: S.row },
+              (() => {
+                const update = snapshot.update ?? { status: 'unknown' };
+                const text = update.status === 'behind'
+                  ? `${t('updateAvailable')}: ${short(update.installed)} → ${short(update.latest)}`
+                  : update.status === 'current'
+                    ? `${t('updateTitle')}: ${t('updateCurrent')} (${short(update.installed)})`
+                    : update.status === 'error'
+                      ? `${t('updateTitle')}: ${t('updateUnknown')}`
+                      : null;
+                if (text === null) return null;
+                return h('span', { style: update.status === 'behind' ? S.statusWait : S.badgeOff }, text);
+              })(),
+              snapshot.update?.status === 'behind'
+                ? h('button', {
+                    type: 'button',
+                    style: { ...S.button, ...(snapshot.updating ? S.buttonOff : {}) },
+                    disabled: snapshot.updating,
+                    onClick: () => void runUpdate(),
+                  }, snapshot.updating ? t('updateStarting') : t('updateButton'))
+                : null,
+            ),
+            snapshot.updateNotice.length > 0 ? h('span', { style: S.hint }, snapshot.updateNotice) : null,
           ),
           h(
             'div',
