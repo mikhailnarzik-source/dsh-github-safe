@@ -11,7 +11,7 @@ dsh plugin --profile desktop add github:mikhailnarzik-source/dsh-github-safe
 ```
 
 Пакет в npm пока не опубликован, поэтому установка идёт прямо из этого
-репозитория. После публикации хватит короткой формы: dsh plugin --profile desktop add dsh-github-safe.
+репозитория. После публикации хватит короткой формы: `dsh plugin --profile desktop add dsh-github-safe`.
 
 Дальше токен: **Настройки → Плагины → GitHub → Personal access token** (один
 раз, значение уходит в хранилище секретов DSH).
