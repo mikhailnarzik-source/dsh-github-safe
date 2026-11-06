@@ -1,5 +1,5 @@
 /**
- * Host half of `@local/github-safe`.
+ * Host half of `dsh-github-safe`.
  *
  * Registers nine GitHub tools and one approval gate. The plugin has no
  * configuration, no dependencies, no filesystem access, no child processes, and

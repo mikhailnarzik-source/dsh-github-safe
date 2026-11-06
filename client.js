@@ -1,5 +1,5 @@
 /**
- * Browser half of `@local/github-safe`.
+ * Browser half of `dsh-github-safe`.
  *
  * Contributes one card to the Plugins page: current token state, a masked input
  * that writes the PAT straight into the DSH credential store (never into the
@@ -10,7 +10,7 @@
  * whether one is configured, and `credentials.set` is write-only.
  */
 window.__ModuleLoader__.load({
-  id: '@local/github-safe',
+  id: 'dsh-github-safe',
   factory: (require) => {
     const module = { exports: {} };
     const exports = module.exports;
@@ -465,7 +465,7 @@ window.__ModuleLoader__.load({
 
       ctx.slots.inject('plugins.item', () => ctx.slots.register({
         name: 'plugins.item',
-        id: '@local/github-safe',
+        id: 'dsh-github-safe',
         order: 50,
         label: () => t('title'),
         locale: NS,
