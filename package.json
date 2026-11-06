@@ -1,6 +1,6 @@
 {
   "name": "dsh-github-safe",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "GitHub tools for DeepSeek Harness behind a deny-by-default allowlist: repository content only, no account, profile, organisation or access management, no DELETE.",
   "type": "module",
   "license": "MIT",

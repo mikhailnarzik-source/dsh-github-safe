@@ -13,6 +13,7 @@
 
 import { createClient, GithubError } from './lib/http.js'
 import { createTools } from './lib/tools.js'
+import { checkForUpdate, formatUpdateState } from './lib/update-check.js'
 
 export const name = 'github-safe'
 
@@ -24,6 +25,9 @@ const VERIFY_PATH = '/api/github-safe/verify'
 
 /** Prompt variable carrying the live token state into every session. */
 const TOKEN_VARIABLE = 'github_token_state'
+
+/** Prompt variable carrying the result of the startup update check. */
+const UPDATE_VARIABLE = 'github_update_state'
 
 /**
  * Prompt section every session receives: it tells the model that this Harness
@@ -40,6 +44,7 @@ This Harness has a GitHub integration installed: plugin \`github-safe\`, tools n
 - The plugin reaches api.github.com and repository content only. It cannot delete anything and cannot touch the account, profile, organisation, collaborators, webhooks, secrets or repository settings. If the user asks for such an action, say plainly that the plugin does not expose it — do not offer a workaround.
 - Never use \`gh\`, \`curl\`, \`git push\` with credentials, or environment variables instead of these tools.
 - Stored token right now: {{${TOKEN_VARIABLE}}}.
+- Plugin update: {{${UPDATE_VARIABLE}}}. When it says an update is available, tell the user once and give the command \`dsh plugin --profile desktop add github:mikhailnarzik-source/dsh-github-safe\`, noting that DSH must be restarted afterwards. Never update the plugin silently and never write into its own files.
 
 If the state says \`not configured\`, or \`github_status\` reports a missing token, stop before doing anything else: tell the user in their language that no GitHub token is stored yet and that it is entered once in Settings → Plugins → GitHub → "Personal access token" (stored as \`refs.GITHUB_TOKEN\` in the DSH credential store), then wait for them.`
 
@@ -126,7 +131,21 @@ export function apply(ctx) {
   // Every session learns that GitHub exists here, what the boundary is, and
   // what to do when the token is missing — without the user explaining it.
   ctx.systemPrompt.variable(TOKEN_VARIABLE, () => tokenState)
+  ctx.systemPrompt.variable(UPDATE_VARIABLE, () => formatUpdateState())
   ctx.systemPrompt.section({ name: 'tool:github-safe', order: 900, text: PROMPT_SECTION })
+
+  // Self-check on load: compare this installed commit with `main` on GitHub.
+  // It only reports — it never replaces its own code, because that would mean
+  // running unreviewed bytes and would still need a restart to take effect.
+  void checkForUpdate(async () => {
+    try {
+      const hit = await ctx.credentials.resolve('GITHUB_TOKEN')
+      return hit?.value
+    } catch {
+      return undefined
+    }
+  })
+
 
   for (const tool of createTools(client)) {
     ctx.tools.register(tool)
