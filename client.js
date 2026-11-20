@@ -208,6 +208,24 @@ const S = {
      * @param ctx - browser plugin context.
      */
     function apply(ctx) {
+  try {
+    ctx.effect(() => {
+      const tag = document.createElement('style')
+      tag.textContent = [
+        '.dsgh-card button{transition:background-color .12s ease,border-color .12s ease}',
+        '.dsgh-card button:hover:not(:disabled){background:rgba(128,128,128,0.16);border-color:rgba(150,150,150,0.65)}',
+        '.dsgh-card button:active:not(:disabled){background:rgba(128,128,128,0.24)}',
+        '.dsgh-card button:disabled{opacity:.55;cursor:default}',
+        '.dsgh-card button:focus-visible{outline:2px solid rgba(80,120,200,0.65);outline-offset:2px}',
+        '.dsgh-card input:focus-visible{outline:2px solid rgba(80,120,200,0.55);outline-offset:1px}',
+      ].join('\n')
+      document.head.appendChild(tag)
+      return () => tag.remove()
+    }, 'github-safe: styles')
+  } catch (error) {
+    console.error('[github-safe] стили недоступны:', error)
+  }
+
       const t = ctx.locale.bind(NS);
       ctx.effect(() => ctx.locale.register(NS, { en, ru }), 'github-safe: card dictionaries');
 
@@ -392,7 +410,7 @@ const S = {
 
         return h(
           'div',
-          { style: S.card },
+          { style: S.card, className: 'dsgh-card' },
           h(
             'div',
             { style: S.section },
