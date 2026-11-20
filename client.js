@@ -474,9 +474,9 @@ window.__ModuleLoader__.load({
           h(
             'div',
             { style: S.section },
-            h('span', { style: S.title }, t('howTitle')),
+            h('span', { style: S.title }, h('span', { style: S.accent }), t('howTitle')),
             h('ul', { style: S.list }, steps.map((step, index) => h('li', { key: index }, step))),
-            h('span', { style: S.title }, t('permTitle')),
+            h('span', { style: S.title }, h('span', { style: S.accent }), t('permTitle')),
             h(
               'table',
               { style: S.table },
@@ -526,13 +526,13 @@ window.__ModuleLoader__.load({
           h(
             'div',
             { style: S.section },
-            h('span', { style: S.title }, t('warnTitle')),
+            h('span', { style: S.title }, h('span', { style: S.accent }), t('warnTitle')),
             h('span', { style: S.hint }, t('warnBody')),
           ),
           h(
             'div',
             { style: S.section },
-            h('span', { style: S.title }, t('policyTitle')),
+            h('span', { style: S.title }, h('span', { style: S.accent }), t('policyTitle')),
             h('span', { style: S.hint }, t('policyBody')),
           ),
         );

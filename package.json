@@ -1,6 +1,6 @@
 {
   "name": "dsh-github-safe",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "GitHub tools for DeepSeek Harness behind a deny-by-default allowlist: repository content only, no account, profile, organisation or access management, no DELETE.",
   "type": "module",
   "license": "MIT",
@@ -22,7 +22,9 @@
   },
   "exports": {
     ".": "./index.js",
-    "./client": "./client.js"
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
   },
   "files": [
     "index.js",
@@ -30,7 +32,10 @@
     "lib",
     "cordis.patch.yml",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "locale",
+    "docs",
+    "icon.svg"
   ],
   "engines": {
     "node": ">=22.19.0"

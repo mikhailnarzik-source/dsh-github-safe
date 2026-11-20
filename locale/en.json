@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "GitHub access",
+    "description": "GitHub tools for the agent behind a deny-by-default allowlist: repository content and issues only, with every write paused for explicit human approval. Cannot delete anything or touch account settings.",
+    "detail": "docs/DETAIL.md"
+  }
+}
