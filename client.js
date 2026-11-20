@@ -144,7 +144,20 @@ window.__ModuleLoader__.load({
     };
 
     /** Element styling kept inline so the card follows the host theme without importing CSS. */
-    const S = {
+        // Нативные поля и списки рисуются системными цветами: без color-scheme
+    // они остаются светлыми в тёмной теме и светлыми в светлой.
+    const themeScheme = () => {
+      try {
+        const background = getComputedStyle(document.body).backgroundColor;
+        const parts = background.match(/[0-9.]+/g);
+        if (parts === null || parts.length < 3) return 'dark';
+        const [r, g, b] = parts.map(Number);
+        return r * 0.299 + g * 0.587 + b * 0.114 > 140 ? 'light' : 'dark';
+      } catch {
+        return 'dark';
+      }
+    };
+const S = {
       card: { display: 'flex', flexDirection: 'column', gap: 10, padding: '4px 0' },
       row: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
       label: { fontSize: 13, fontWeight: 600 },
@@ -158,6 +171,7 @@ window.__ModuleLoader__.load({
         color: 'inherit',
         font: 'inherit',
         fontSize: 13,
+              colorScheme: themeScheme(),
       },
       button: {
         padding: '7px 14px',
