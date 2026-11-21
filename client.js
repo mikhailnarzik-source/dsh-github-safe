@@ -593,7 +593,17 @@ const S = {
               order: 45,
               locale: NS,
             },
-            DetailCard_dshgithubsafe,
+            (props) => {
+              const subject = props?.subject
+              const packageName =
+                subject?.kind === 'bundle' && typeof subject?.pkg?.name === 'string'
+                  ? subject.pkg.name
+                  : typeof subject?.id === 'string'
+                    ? subject.id
+                    : ''
+              if (packageName !== 'dsh-github-safe') return null
+              return h(GithubCard, props)
+            },
           ),
         )
       } catch (error) {
