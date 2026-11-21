@@ -207,6 +207,20 @@ const S = {
      * Mount the card and its credential control.
      * @param ctx - browser plugin context.
      */
+    /** Содержимое карточки на странице своего плагина. */
+    function DetailCard_dshgithubsafe(props) {
+      const subject = props?.subject
+      const packageName =
+        subject?.kind === 'bundle' && typeof subject?.pkg?.name === 'string'
+          ? subject.pkg.name
+          : typeof subject?.id === 'string'
+            ? subject.id
+            : ''
+      if (packageName !== 'dsh-github-safe') return null
+      const content = GithubCard
+      return typeof content === 'function' ? content(props) : content
+    }
+
     function apply(ctx) {
   try {
     ctx.effect(() => {
@@ -570,13 +584,21 @@ const S = {
         );
       }
 
-      ctx.slots.inject('plugins.item', () => ctx.slots.register({
-        name: 'plugins.item',
-        id: 'dsh-github-safe',
-        order: 50,
-        label: () => t('title'),
-        locale: NS,
-      }, GithubCard));
+            try {
+        ctx.slots.inject('plugins.detail.section', () =>
+          ctx.slots.register(
+            {
+              name: 'plugins.detail.section',
+              id: 'dsh-github-safe-detail',
+              order: 45,
+              locale: NS,
+            },
+            DetailCard_dshgithubsafe,
+          ),
+        )
+      } catch (error) {
+        console.error('[dsh-github-safe] секция страницы недоступна:', error)
+      }
     }
 
     exports.apply = apply;
