@@ -1,4 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
-  <path d="M12 3l7.5 3v6c0 4.2-3 7.6-7.5 9-4.5-1.4-7.5-4.8-7.5-9V6L12 3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-  <path d="M8.6 12.2l2.3 2.3 4.6-4.8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" role="img">
+  <defs>
+    <linearGradient id="dsh-icon-gradient" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#64748B"/><stop offset="1" stop-color="#22C55E"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="44" height="44" rx="13" fill="url(#dsh-icon-gradient)"/>
+  <rect x="2.75" y="2.75" width="42.5" height="42.5" rx="12.25" fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="1.5"/>
+  <g transform="translate(12 12) scale(1)" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M12 3l7.5 3v6c0 4.2-3 7.6-7.5 9-4.5-1.4-7.5-4.8-7.5-9V6L12 3z" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M8.6 12.2l2.3 2.3 4.6-4.8" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
 </svg>

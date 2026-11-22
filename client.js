@@ -28,6 +28,10 @@ window.__ModuleLoader__.load({
       summarySet: 'Token configured',
       summaryUnset: 'Token not configured',
       pageTitle: 'GitHub access',
+      pageSubtitle: 'Personal access token for the GitHub REST API, kept in the DSH credential store',
+      refresh: 'Refresh',
+      refreshing: 'Refreshing…',
+      tokenSection: 'Access token',
       tokenLabel: 'Personal access token',
       placeholderSet: '•••••••• (enter a new value to replace)',
       placeholderUnset: 'github_pat_…',
@@ -88,6 +92,10 @@ window.__ModuleLoader__.load({
       summarySet: 'Токен настроен',
       summaryUnset: 'Токен не настроен',
       pageTitle: 'Доступ к GitHub',
+      pageSubtitle: 'Personal access token для REST API GitHub, хранится в хранилище секретов DSH',
+      refresh: 'Обновить',
+      refreshing: 'Обновляю…',
+      tokenSection: 'Токен доступа',
       tokenLabel: 'Personal access token',
       placeholderSet: '•••••••• (введите новое значение, чтобы заменить)',
       placeholderUnset: 'github_pat_…',
@@ -157,50 +165,234 @@ window.__ModuleLoader__.load({
         return 'dark';
       }
     };
-const S = {
-      card: { display: 'flex', flexDirection: 'column', gap: 10, padding: '4px 0' },
-      row: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
-      label: { fontSize: 13, fontWeight: 600 },
+    /** Общий каркас: центрированная страница maxWidth 960, шапка с иконкой, карточки-секции. */
+    const PAGE_MAX_WIDTH = 960
+    const BUTTON = {
+      height: 36,
+      padding: '0 14px',
+      borderRadius: 10,
+      font: 'inherit',
+      fontSize: 12.5,
+      fontWeight: 600,
+      lineHeight: '20px',
+      cursor: 'pointer',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      transition: 'background-color .12s ease,border-color .12s ease,color .12s ease',
+    }
+    const S = {
+      page: {
+        width: '100%',
+        maxWidth: PAGE_MAX_WIDTH,
+        margin: '0 auto',
+        padding: '24px 28px 40px',
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 16,
+        color: 'var(--dsw-alias-label-primary)',
+      },
+      header: { display: 'flex', alignItems: 'flex-start', gap: 14, flexWrap: 'wrap' },
+      logo: {
+        flex: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 52,
+        height: 52,
+        borderRadius: 14,
+        fontSize: 26,
+        lineHeight: 1,
+        background: 'linear-gradient(135deg, color-mix(in srgb, var(--dsw-alias-brand-primary) 92%, transparent), color-mix(in srgb, var(--dsw-alias-brand-primary) 62%, transparent))',
+        boxShadow: '0 6px 16px color-mix(in srgb, var(--dsw-alias-brand-primary) 22%, transparent)',
+      },
+      heading: { display: 'flex', flexDirection: 'column', gap: 2, flex: '1 1 240px', minWidth: 0 },
+      h1: {
+        margin: 0,
+        fontSize: 20,
+        fontWeight: 600,
+        lineHeight: '26px',
+        color: 'var(--dsw-alias-label-primary)',
+      },
+      sub: {
+        margin: 0,
+        fontSize: 12.5,
+        fontWeight: 400,
+        lineHeight: '18px',
+        color: 'var(--dsw-alias-label-secondary)',
+        display: '-webkit-box',
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden',
+      },
+      actions: { display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto', flexWrap: 'wrap' },
+      card: {
+        background: 'var(--dsw-alias-bg-layer-1)',
+        border: '1px solid var(--dsw-alias-border-l2)',
+        borderRadius: 14,
+        padding: 16,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+        minWidth: 0,
+      },
+      sectionTitle: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        margin: 0,
+        fontSize: 14,
+        fontWeight: 600,
+        lineHeight: '20px',
+        color: 'var(--dsw-alias-label-primary)',
+      },
+      accent: {
+        display: 'inline-block',
+        flex: 'none',
+        width: 3,
+        height: 14,
+        borderRadius: 2,
+        background: 'var(--dsw-alias-brand-primary)',
+      },
+      subTitle: {
+        margin: 0,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        fontSize: 13,
+        fontWeight: 600,
+        lineHeight: '18px',
+        color: 'var(--dsw-alias-label-primary)',
+      },
+      row: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', minWidth: 0 },
+      label: { fontSize: 12, fontWeight: 500, color: 'var(--dsw-alias-label-secondary)' },
       input: {
         flex: '1 1 260px',
-        minWidth: 220,
-        padding: '7px 10px',
-        borderRadius: 8,
-        border: '1px solid rgba(128,128,128,0.45)',
+        minWidth: 200,
+        height: 34,
+        padding: '0 10px',
+        borderRadius: 9,
+        border: '1px solid var(--dsw-alias-border-l2)',
+        background: 'var(--dsw-alias-bg-layer-2)',
+        color: 'var(--dsw-alias-label-primary)',
+        font: 'inherit',
+        fontSize: 12.5,
+        colorScheme: themeScheme(),
+      },
+      primary: {
+        ...BUTTON,
+        border: '1px solid transparent',
+        background: 'var(--dsw-alias-brand-primary)',
+        color: '#fff',
+      },
+      secondary: {
+        ...BUTTON,
+        border: '1px solid var(--dsw-alias-border-l4)',
         background: 'transparent',
-        color: 'inherit',
-        font: 'inherit',
-        fontSize: 13,
-              colorScheme: themeScheme(),
+        color: 'var(--dsw-alias-label-primary)',
       },
-      button: {
-        padding: '7px 14px',
-        borderRadius: 8,
-        border: '1px solid rgba(128,128,128,0.45)',
-        background: 'rgba(128,128,128,0.12)',
-        color: 'inherit',
-        font: 'inherit',
-        fontSize: 13,
-        cursor: 'pointer',
+      danger: {
+        ...BUTTON,
+        border: '1px solid color-mix(in srgb, var(--dsw-alias-state-error-primary) 55%, transparent)',
+        background: 'transparent',
+        color: 'var(--dsw-alias-state-error-primary)',
       },
-      buttonOff: { opacity: 0.5, cursor: 'default' },
-      badgeOn: { fontSize: 12, padding: '2px 8px', borderRadius: 999, background: 'rgba(46,160,67,0.18)', border: '1px solid rgba(46,160,67,0.45)' },
-      badgeOff: { fontSize: 12, padding: '2px 8px', borderRadius: 999, background: 'rgba(128,128,128,0.14)', border: '1px solid rgba(128,128,128,0.35)' },
-      statusOk: { fontSize: 12.5, padding: '3px 9px', borderRadius: 999, background: 'rgba(46,160,67,0.16)', border: '1px solid rgba(46,160,67,0.5)' },
-      statusBad: { fontSize: 12.5, padding: '3px 9px', borderRadius: 999, background: 'rgba(209,36,47,0.14)', border: '1px solid rgba(209,36,47,0.5)' },
-      statusWait: { fontSize: 12.5, padding: '3px 9px', borderRadius: 999, background: 'rgba(200,140,0,0.16)', border: '1px solid rgba(200,140,0,0.5)' },
-      statusNeutral: { fontSize: 12.5, padding: '3px 9px', borderRadius: 999, background: 'rgba(128,128,128,0.14)', border: '1px solid rgba(128,128,128,0.4)' },
-      hint: { fontSize: 12, opacity: 0.75, lineHeight: 1.45 },
-      table: { width: '100%', borderCollapse: 'collapse', fontSize: 12.5, marginTop: 4 },
-      th: { textAlign: 'left', padding: '6px 8px', borderBottom: '1px solid rgba(128,128,128,0.4)', fontWeight: 600, fontSize: 12 },
-      td: { padding: '6px 8px', borderBottom: '1px solid rgba(128,128,128,0.16)', verticalAlign: 'top', lineHeight: 1.45 },
-      tdLevel: { padding: '6px 8px', borderBottom: '1px solid rgba(128,128,128,0.16)', verticalAlign: 'top', whiteSpace: 'nowrap', fontSize: 12.5 },
-      hintNote: { fontSize: 12, lineHeight: 1.5, padding: '8px 10px', borderRadius: 8, background: 'rgba(200,140,0,0.12)', border: '1px solid rgba(200,140,0,0.35)' },
-      error: { fontSize: 12, color: '#d1242f' },
-      section: { display: 'flex', flexDirection: 'column', gap: 6 },
-      title: { fontSize: 13, fontWeight: 600, marginTop: 4 },
-      list: { margin: 0, paddingLeft: 18, fontSize: 12.5, lineHeight: 1.55, opacity: 0.9 },
-      link: { color: 'inherit', fontSize: 12.5, textDecoration: 'underline' },
+      small: { height: 32, padding: '0 12px' },
+      off: { opacity: 0.55, cursor: 'default' },
+      chip: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        padding: '3px 9px',
+        borderRadius: 999,
+        fontSize: 12,
+        lineHeight: '17px',
+        border: '1px solid var(--dsw-alias-border-l2)',
+        background: 'var(--dsw-alias-bg-layer-2)',
+        color: 'var(--dsw-alias-label-secondary)',
+        whiteSpace: 'nowrap',
+      },
+      chipOk: {
+        border: '1px solid color-mix(in srgb, var(--dsw-alias-state-success-primary) 55%, transparent)',
+        background: 'color-mix(in srgb, var(--dsw-alias-state-success-primary) 14%, transparent)',
+        color: 'var(--dsw-alias-state-success-primary)',
+      },
+      chipBad: {
+        border: '1px solid color-mix(in srgb, var(--dsw-alias-state-error-primary) 55%, transparent)',
+        background: 'color-mix(in srgb, var(--dsw-alias-state-error-primary) 12%, transparent)',
+        color: 'var(--dsw-alias-state-error-primary)',
+      },
+      chipWarn: {
+        border: '1px solid color-mix(in srgb, var(--dsw-alias-state-warn-primary) 55%, transparent)',
+        background: 'color-mix(in srgb, var(--dsw-alias-state-warn-primary) 14%, transparent)',
+        color: 'var(--dsw-alias-state-warn-primary)',
+      },
+      dot: (color) => ({ flex: 'none', width: 6, height: 6, borderRadius: '50%', background: color }),
+      badgeOn: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        padding: '2px 8px',
+        borderRadius: 999,
+        fontSize: 12,
+        lineHeight: '17px',
+        border: '1px solid color-mix(in srgb, var(--dsw-alias-state-success-primary) 55%, transparent)',
+        background: 'color-mix(in srgb, var(--dsw-alias-state-success-primary) 14%, transparent)',
+      },
+      badgeOff: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        padding: '2px 8px',
+        borderRadius: 999,
+        fontSize: 12,
+        lineHeight: '17px',
+        border: '1px solid var(--dsw-alias-border-l2)',
+        background: 'var(--dsw-alias-bg-layer-2)',
+      },
+      hint: { fontSize: 12, lineHeight: '17px', color: 'var(--dsw-alias-label-secondary)' },
+      notice: { fontSize: 12, lineHeight: '17px', color: 'var(--dsw-alias-label-primary)' },
+      table: { width: '100%', borderCollapse: 'collapse', fontSize: 12.5, marginTop: 2 },
+      th: {
+        textAlign: 'left',
+        padding: '8px 10px',
+        borderBottom: '1px solid var(--dsw-alias-border-l2)',
+        fontWeight: 600,
+        fontSize: 12,
+        color: 'var(--dsw-alias-label-secondary)',
+      },
+      td: {
+        padding: '8px 10px',
+        borderBottom: '1px solid var(--dsw-alias-border-l1)',
+        verticalAlign: 'top',
+        lineHeight: 1.45,
+      },
+      tdLevel: {
+        padding: '8px 10px',
+        borderBottom: '1px solid var(--dsw-alias-border-l1)',
+        verticalAlign: 'top',
+        whiteSpace: 'nowrap',
+        fontSize: 12.5,
+      },
+      hintNote: {
+        fontSize: 12,
+        lineHeight: 1.5,
+        padding: '10px 12px',
+        borderRadius: 10,
+        border: '1px solid color-mix(in srgb, var(--dsw-alias-state-warn-primary) 40%, transparent)',
+        background: 'color-mix(in srgb, var(--dsw-alias-state-warn-primary) 10%, transparent)',
+        color: 'var(--dsw-alias-label-secondary)',
+      },
+      error: { fontSize: 12, lineHeight: '17px', color: 'var(--dsw-alias-state-error-primary)' },
+      list: {
+        margin: 0,
+        paddingLeft: 18,
+        fontSize: 12.5,
+        lineHeight: 1.6,
+        color: 'var(--dsw-alias-label-secondary)',
+      },
+      step: { padding: '2px 0' },
+      link: { color: 'var(--dsw-alias-brand-primary)', fontSize: 12.5, textDecoration: 'underline' },
     };
 
     /**
@@ -226,12 +418,15 @@ const S = {
     ctx.effect(() => {
       const tag = document.createElement('style')
       tag.textContent = [
-        '.dsgh-card button{transition:background-color .12s ease,border-color .12s ease}',
-        '.dsgh-card button:hover:not(:disabled){background:rgba(128,128,128,0.16);border-color:rgba(150,150,150,0.65)}',
-        '.dsgh-card button:active:not(:disabled){background:rgba(128,128,128,0.24)}',
-        '.dsgh-card button:disabled{opacity:.55;cursor:default}',
-        '.dsgh-card button:focus-visible{outline:2px solid rgba(80,120,200,0.65);outline-offset:2px}',
-        '.dsgh-card input:focus-visible{outline:2px solid rgba(80,120,200,0.55);outline-offset:1px}',
+        '.dsgh button{transition:background-color .12s ease,border-color .12s ease,color .12s ease}',
+        '.dsgh button.is-secondary:hover:not(:disabled){background:color-mix(in srgb,var(--dsw-alias-label-primary) 8%,transparent);border-color:var(--dsw-alias-border-l4)}',
+        '.dsgh button.is-primary:hover:not(:disabled){filter:brightness(1.06)}',
+        '.dsgh button.is-danger:hover:not(:disabled){background:color-mix(in srgb,var(--dsw-alias-state-error-primary) 10%,transparent)}',
+        '.dsgh button:disabled{opacity:.55;cursor:default}',
+        '.dsgh button:focus-visible,.dsgh input:focus-visible,.dsgh a:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}',
+        '.dsgh table tbody tr:hover td{background:color-mix(in srgb,var(--dsw-alias-brand-primary) 5%,transparent)}',
+        '.dsgh ol li:hover{color:var(--dsw-alias-label-primary)}',
+        '@media (max-width:760px){.dsgh{padding:18px 16px 32px !important}.dsgh header{gap:10px}}',
       ].join('\n')
       document.head.appendChild(tag)
       return () => tag.remove()
@@ -374,6 +569,7 @@ const S = {
         const [draft, setDraft] = React.useState('');
         const [busy, setBusy] = React.useState(false);
         const [notice, setNotice] = React.useState('');
+        const [refreshing, setRefreshing] = React.useState(false);
 
         // The confirmation line is transient: a stale "saved" must not sit on
         // the card forever and read as the current state.
@@ -392,10 +588,21 @@ const S = {
             h('span', { style: snapshot.configured ? S.badgeOn : S.badgeOff },
               snapshot.configured ? t('setBadge') : t('unsetBadge')),
             update.status === 'behind'
-              ? h('span', { style: S.statusWait }, `${t('updateAvailable')}: ${short(update.installed)} → ${short(update.latest)}`)
+              ? h('span', { style: { ...S.chip, ...S.chipWarn } }, `${t('updateAvailable')}: ${short(update.installed)} → ${short(update.latest)}`)
               : null,
           );
         }
+
+        // Manual refresh from the header: re-read the token state and check it with GitHub again.
+        const reload = async () => {
+          if (refreshing) return;
+          setRefreshing(true);
+          try {
+            await refresh();
+          } finally {
+            setRefreshing(false);
+          }
+        };
 
         const submit = async () => {
           if (busy || draft.trim().length === 0) return;
@@ -421,13 +628,71 @@ const S = {
         };
 
         const steps = [t('step1'), t('step2'), t('step3'), t('step4'), t('step5')];
+        const update = snapshot.update ?? { status: 'unknown' };
+        const updateText = update.status === 'behind'
+          ? `${t('updateAvailable')}: ${short(update.installed)} → ${short(update.latest)}`
+          : update.status === 'current'
+            ? `${t('updateCurrent')} (${short(update.installed)})`
+            : update.status === 'error'
+              ? t('updateUnknown')
+              : '';
+
+        const check = snapshot.check ?? { phase: 'idle' };
+        const checkText = check.phase === 'checking' ? t('checking')
+          : check.phase === 'accepted' ? t('accepted')
+            : check.phase === 'rejected' ? t('rejected')
+              : check.phase === 'missing' ? t('missing')
+                : check.phase === 'unreachable' ? t('unreachable')
+                  : '';
+        const checkTone = check.phase === 'accepted' ? S.chipOk
+          : check.phase === 'rejected' ? S.chipBad
+            : check.phase === 'unreachable' ? S.chipWarn
+              : {};
+        const checkDot = check.phase === 'accepted' ? 'var(--dsw-alias-state-success-primary)'
+          : check.phase === 'rejected' ? 'var(--dsw-alias-state-error-primary)'
+            : check.phase === 'unreachable' ? 'var(--dsw-alias-state-warn-primary)'
+              : 'var(--dsw-alias-label-tertiary)';
+        const button = (kind, disabled) => ({ ...(S[kind] ?? S.secondary), ...(disabled ? S.off : {}) });
 
         return h(
           'div',
-          { style: S.card, className: 'dsgh-card' },
+          { style: S.page, className: 'dsgh dsgh-card' },
           h(
-            'div',
-            { style: S.section },
+            'header',
+            { style: S.header },
+            h('span', { style: S.logo, 'aria-hidden': true }, '🔐'),
+            h(
+              'div',
+              { style: S.heading },
+              h('h1', { style: S.h1 }, t('pageTitle')),
+              h('p', { style: S.sub }, t('pageSubtitle')),
+            ),
+            h(
+              'div',
+              { style: S.actions },
+              h(
+                'span',
+                { style: S.chip, role: 'status' },
+                h('span', {
+                  style: S.dot(snapshot.configured
+                    ? 'var(--dsw-alias-state-success-primary)'
+                    : 'var(--dsw-alias-state-error-primary)'),
+                }),
+                snapshot.configured ? t('setBadge') : t('unsetBadge'),
+              ),
+              h('button', {
+                type: 'button',
+                className: 'is-secondary',
+                style: { ...S.secondary, ...S.small, ...(refreshing ? S.off : {}) },
+                disabled: refreshing,
+                onClick: () => void reload(),
+              }, refreshing ? t('refreshing') : t('refresh')),
+            ),
+          ),
+          h(
+            'section',
+            { style: S.card, 'aria-label': t('tokenSection') },
+            h('h2', { style: S.sectionTitle }, h('span', { style: S.accent }), t('tokenSection')),
             h('label', { style: S.label, htmlFor: 'github-safe-token' }, t('tokenLabel')),
             h(
               'div',
@@ -446,14 +711,16 @@ const S = {
               }),
               h('button', {
                 type: 'button',
-                style: { ...S.button, ...(busy || draft.trim().length === 0 ? S.buttonOff : {}) },
+                className: 'is-primary',
+                style: button('primary', busy || draft.trim().length === 0),
                 disabled: busy || draft.trim().length === 0,
                 onClick: () => void submit(),
               }, busy ? t('saving') : t('save')),
               snapshot.configured
                 ? h('button', {
                     type: 'button',
-                    style: { ...S.button, ...(busy ? S.buttonOff : {}) },
+                    className: 'is-danger',
+                    style: button('danger', busy),
                     disabled: busy,
                     onClick: () => void remove(),
                   }, t('clear'))
@@ -463,20 +730,14 @@ const S = {
             h(
               'div',
               { style: S.row },
-              (() => {
-                const check = snapshot.check ?? { phase: 'idle' };
-                const text = check.phase === 'checking' ? t('checking')
-                  : check.phase === 'accepted' ? t('accepted')
-                    : check.phase === 'rejected' ? t('rejected')
-                      : check.phase === 'missing' ? t('missing')
-                        : check.phase === 'unreachable' ? t('unreachable')
-                          : '';
-                const style = check.phase === 'accepted' ? S.statusOk
-                  : check.phase === 'rejected' ? S.statusBad
-                    : check.phase === 'unreachable' ? S.statusWait
-                      : S.statusNeutral;
-                return text.length === 0 ? null : h('span', { style, role: 'status' }, text);
-              })(),
+              checkText.length === 0
+                ? null
+                : h(
+                    'span',
+                    { style: { ...S.chip, ...checkTone }, role: 'status' },
+                    h('span', { style: S.dot(checkDot) }),
+                    checkText,
+                  ),
               snapshot.check?.phase === 'accepted' && snapshot.check?.remaining !== null
                 ? h('span', { style: S.hint }, `${t('quota')} ${snapshot.check.remaining}`)
                 : null,
@@ -484,32 +745,42 @@ const S = {
                 ? null
                 : h('button', {
                     type: 'button',
-                    style: { ...S.button, ...(busy ? S.buttonOff : {}) },
+                    className: 'is-secondary',
+                    style: button('secondary', busy),
                     disabled: busy,
                     onClick: () => void verify(),
                   }, t('again')),
             ),
             snapshot.writable ? null : h('span', { style: S.error }, t('readonly')),
-            notice.length > 0 ? h('span', { style: S.hint }, notice) : null,
+            notice.length > 0 ? h('span', { style: S.notice }, notice) : null,
+          ),
+          h(
+            'section',
+            { style: S.card, 'aria-label': t('updateTitle') },
+            h('h2', { style: S.sectionTitle }, h('span', { style: S.accent }), t('updateTitle')),
             h(
               'div',
               { style: S.row },
-              (() => {
-                const update = snapshot.update ?? { status: 'unknown' };
-                const text = update.status === 'behind'
-                  ? `${t('updateAvailable')}: ${short(update.installed)} → ${short(update.latest)}`
-                  : update.status === 'current'
-                    ? `${t('updateTitle')}: ${t('updateCurrent')} (${short(update.installed)})`
-                    : update.status === 'error'
-                      ? `${t('updateTitle')}: ${t('updateUnknown')}`
-                      : null;
-                if (text === null) return null;
-                return h('span', { style: update.status === 'behind' ? S.statusWait : S.badgeOff }, text);
-              })(),
+              updateText.length === 0
+                ? h(
+                    'span',
+                    { style: S.chip, role: 'status' },
+                    h('span', { style: S.dot('var(--dsw-alias-label-tertiary)') }),
+                    `${t('updateTitle')}: ${t('updateUnknown')}`,
+                  )
+                : h(
+                    'span',
+                    { style: { ...S.chip, ...(update.status === 'behind' ? S.chipWarn : {}) }, role: 'status' },
+                    update.status === 'behind'
+                      ? h('span', { style: S.dot('var(--dsw-alias-state-warn-primary)') })
+                      : h('span', { style: S.dot('var(--dsw-alias-state-success-primary)') }),
+                    updateText,
+                  ),
               snapshot.update?.status === 'behind'
                 ? h('button', {
                     type: 'button',
-                    style: { ...S.button, ...(snapshot.updating ? S.buttonOff : {}) },
+                    className: 'is-secondary',
+                    style: button('secondary', snapshot.updating),
                     disabled: snapshot.updating,
                     onClick: () => void runUpdate(),
                   }, snapshot.updating ? t('updateStarting') : t('updateButton'))
@@ -518,11 +789,11 @@ const S = {
             snapshot.updateNotice.length > 0 ? h('span', { style: S.hint }, snapshot.updateNotice) : null,
           ),
           h(
-            'div',
-            { style: S.section },
-            h('span', { style: S.title }, h('span', { style: S.accent }), t('howTitle')),
-            h('ul', { style: S.list }, steps.map((step, index) => h('li', { key: index }, step))),
-            h('span', { style: S.title }, h('span', { style: S.accent }), t('permTitle')),
+            'section',
+            { style: S.card, 'aria-label': t('howTitle') },
+            h('h2', { style: S.sectionTitle }, h('span', { style: S.accent }), t('howTitle')),
+            h('ol', { style: S.list }, steps.map((step, index) => h('li', { key: index, style: S.step }, step))),
+            h('h3', { style: S.subTitle }, h('span', { style: S.accent }), t('permTitle')),
             h(
               'table',
               { style: S.table },
@@ -570,15 +841,15 @@ const S = {
             }, t('openGithub')),
           ),
           h(
-            'div',
-            { style: S.section },
-            h('span', { style: S.title }, h('span', { style: S.accent }), t('warnTitle')),
+            'section',
+            { style: S.card, 'aria-label': t('warnTitle') },
+            h('h2', { style: S.sectionTitle }, h('span', { style: S.accent }), t('warnTitle')),
             h('span', { style: S.hint }, t('warnBody')),
           ),
           h(
-            'div',
-            { style: S.section },
-            h('span', { style: S.title }, h('span', { style: S.accent }), t('policyTitle')),
+            'section',
+            { style: S.card, 'aria-label': t('policyTitle') },
+            h('h2', { style: S.sectionTitle }, h('span', { style: S.accent }), t('policyTitle')),
             h('span', { style: S.hint }, t('policyBody')),
           ),
         );
