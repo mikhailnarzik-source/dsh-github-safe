@@ -168,6 +168,7 @@ window.__ModuleLoader__.load({
     /** Общий каркас: центрированная страница maxWidth 960, шапка с иконкой, карточки-секции. */
     const PAGE_MAX_WIDTH = 960
     const BUTTON = {
+      boxSizing: 'border-box',
       height: 36,
       padding: '0 14px',
       borderRadius: 10,
@@ -180,8 +181,10 @@ window.__ModuleLoader__.load({
       alignItems: 'center',
       justifyContent: 'center',
       gap: 6,
+      whiteSpace: 'nowrap',
       transition: 'background-color .12s ease,border-color .12s ease,color .12s ease',
     }
+    /** Мягкая заливка brand: текст остаётся brand и читается в обеих темах. */
     const S = {
       page: {
         width: '100%',
@@ -269,8 +272,8 @@ window.__ModuleLoader__.load({
       row: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', minWidth: 0 },
       label: { fontSize: 12, fontWeight: 500, color: 'var(--dsw-alias-label-secondary)' },
       input: {
-        flex: '1 1 260px',
-        minWidth: 200,
+        flex: '1 1 220px',
+        minWidth: 0,
         height: 34,
         padding: '0 10px',
         borderRadius: 9,
@@ -283,9 +286,9 @@ window.__ModuleLoader__.load({
       },
       primary: {
         ...BUTTON,
-        border: '1px solid transparent',
-        background: 'var(--dsw-alias-brand-primary)',
-        color: '#fff',
+        border: '1px solid color-mix(in srgb, var(--dsw-alias-brand-primary) 55%, transparent)',
+        background: 'color-mix(in srgb, var(--dsw-alias-brand-primary) 18%, transparent)',
+        color: 'var(--dsw-alias-brand-primary)',
       },
       secondary: {
         ...BUTTON,
@@ -295,8 +298,8 @@ window.__ModuleLoader__.load({
       },
       danger: {
         ...BUTTON,
-        border: '1px solid color-mix(in srgb, var(--dsw-alias-state-error-primary) 55%, transparent)',
-        background: 'transparent',
+        border: '1px solid color-mix(in srgb, var(--dsw-alias-state-error-primary) 50%, transparent)',
+        background: 'color-mix(in srgb, var(--dsw-alias-state-error-primary) 16%, transparent)',
         color: 'var(--dsw-alias-state-error-primary)',
       },
       small: { height: 32, padding: '0 12px' },
@@ -352,7 +355,7 @@ window.__ModuleLoader__.load({
       },
       hint: { fontSize: 12, lineHeight: '17px', color: 'var(--dsw-alias-label-secondary)' },
       notice: { fontSize: 12, lineHeight: '17px', color: 'var(--dsw-alias-label-primary)' },
-      table: { width: '100%', borderCollapse: 'collapse', fontSize: 12.5, marginTop: 2 },
+      table: { width: '100%', borderCollapse: 'collapse', fontSize: 12.5, marginTop: 2, minWidth: 320 },
       th: {
         textAlign: 'left',
         padding: '8px 10px',
@@ -360,12 +363,14 @@ window.__ModuleLoader__.load({
         fontWeight: 600,
         fontSize: 12,
         color: 'var(--dsw-alias-label-secondary)',
+        whiteSpace: 'nowrap',
       },
       td: {
         padding: '8px 10px',
         borderBottom: '1px solid var(--dsw-alias-border-l1)',
         verticalAlign: 'top',
         lineHeight: 1.45,
+        overflowWrap: 'anywhere',
       },
       tdLevel: {
         padding: '8px 10px',
@@ -384,6 +389,8 @@ window.__ModuleLoader__.load({
         color: 'var(--dsw-alias-label-secondary)',
       },
       error: { fontSize: 12, lineHeight: '17px', color: 'var(--dsw-alias-state-error-primary)' },
+      /** Широкие блоки (таблица прав) не должны растягивать страницу. */
+      scroll: { overflowX: 'auto', maxWidth: '100%', minWidth: 0, paddingBottom: 2 },
       list: {
         margin: 0,
         paddingLeft: 18,
@@ -419,14 +426,17 @@ window.__ModuleLoader__.load({
       const tag = document.createElement('style')
       tag.textContent = [
         '.dsgh button{transition:background-color .12s ease,border-color .12s ease,color .12s ease}',
-        '.dsgh button.is-secondary:hover:not(:disabled){background:color-mix(in srgb,var(--dsw-alias-label-primary) 8%,transparent);border-color:var(--dsw-alias-border-l4)}',
-        '.dsgh button.is-primary:hover:not(:disabled){filter:brightness(1.06)}',
-        '.dsgh button.is-danger:hover:not(:disabled){background:color-mix(in srgb,var(--dsw-alias-state-error-primary) 10%,transparent)}',
+        '.dsgh button.is-secondary:hover:not(:disabled){background:var(--dsw-alias-interactive-bg-hover) !important}',
+        '.dsgh button.is-primary{background:color-mix(in srgb,var(--dsw-alias-brand-primary) 18%,transparent);border-color:color-mix(in srgb,var(--dsw-alias-brand-primary) 55%,transparent);color:var(--dsw-alias-brand-primary)}',
+        '.dsgh button.is-primary:hover:not(:disabled){background:color-mix(in srgb,var(--dsw-alias-brand-primary) 28%,transparent) !important}',
+        '.dsgh button.is-danger{background:color-mix(in srgb,var(--dsw-alias-state-error-primary) 16%,transparent);border-color:color-mix(in srgb,var(--dsw-alias-state-error-primary) 50%,transparent);color:var(--dsw-alias-state-error-primary)}',
+        '.dsgh button.is-danger:hover:not(:disabled){background:color-mix(in srgb,var(--dsw-alias-state-error-primary) 24%,transparent) !important}',
         '.dsgh button:disabled{opacity:.55;cursor:default}',
         '.dsgh button:focus-visible,.dsgh input:focus-visible,.dsgh a:focus-visible{outline:2px solid var(--dsw-alias-brand-primary);outline-offset:2px}',
         '.dsgh table tbody tr:hover td{background:color-mix(in srgb,var(--dsw-alias-brand-primary) 5%,transparent)}',
         '.dsgh ol li:hover{color:var(--dsw-alias-label-primary)}',
-        '@media (max-width:760px){.dsgh{padding:18px 16px 32px !important}.dsgh header{gap:10px}}',
+        '@media (max-width:900px){.dsgh{padding:20px 20px 36px !important}}',
+        '@media (max-width:640px){.dsgh{padding:18px 16px 32px !important}.dsgh header{gap:10px}.dsgh button{max-width:100%}}',
       ].join('\n')
       document.head.appendChild(tag)
       return () => tag.remove()
@@ -795,8 +805,11 @@ window.__ModuleLoader__.load({
             h('ol', { style: S.list }, steps.map((step, index) => h('li', { key: index, style: S.step }, step))),
             h('h3', { style: S.subTitle }, h('span', { style: S.accent }), t('permTitle')),
             h(
-              'table',
-              { style: S.table },
+              'div',
+              { style: S.scroll },
+              h(
+                'table',
+                { style: S.table },
               h(
                 'thead',
                 null,
@@ -829,6 +842,7 @@ window.__ModuleLoader__.load({
                   ),
                 ),
               ),
+            ),
             ),
             h('span', { style: S.hint }, t('permNote')),
             h('span', { style: S.hint }, t('permAccessNote')),

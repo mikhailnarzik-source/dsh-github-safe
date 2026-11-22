@@ -269,8 +269,28 @@ test('client.js: страница оформлена по единому сти�
   assert.match(css, /\.dsgh button\.is-primary:hover/)
   assert.match(css, /\.dsgh button\.is-danger:hover/)
   assert.match(css, /:focus-visible/)
-  assert.match(css, /@media \(max-width:760px\)/)
+  assert.match(css, /@media \(max-width:900px\)/)
+  assert.match(css, /@media \(max-width:640px\)/)
   assert.doesNotMatch(css, /#[0-9a-fA-F]{6}/, 'в стилях нет жёстких hex-цветов')
+
+  // Итерация 2: мягкая primary-кнопка, ширина по тексту, прокрутка таблицы.
+  assert.equal(save.props.style.height, 36)
+  assert.equal(save.props.style.padding, '0 14px')
+  assert.equal(save.props.style.borderRadius, 10)
+  assert.equal(save.props.style.whiteSpace, 'nowrap')
+  assert.match(String(save.props.style.background), /brand-primary\) 18%/)
+  assert.match(String(save.props.style.color), /brand-primary/)
+  assert.doesNotMatch(JSON.stringify(save.props.style), /#fff|color: ?white/i, 'нет белого текста на заливке')
+
+  const dangerCss = css.includes('state-error-primary) 16%')
+  assert.ok(dangerCss, 'danger-кнопка — мягкий красный из CSS')
+
+  const table = all.find(node => node.type === 'table')
+  assert.ok(table, 'таблица прав')
+  const scroll = tree && elements(tree).find(node => node.props?.style?.overflowX === 'auto' && elements(node).some(child => child.type === 'table'))
+  assert.ok(scroll, 'таблица прав обёрнута в контейнер с overflow-x:auto')
+  assert.equal(scroll.props.style.maxWidth, '100%')
+  assert.equal(input.props.style.minWidth, 0, 'поле не имеет фиксированной min-width')
 })
 
 test('client.js: без битых символов в исходнике', async () => {
