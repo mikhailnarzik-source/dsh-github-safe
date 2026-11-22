@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "GitHub access",
-    "description": "GitHub tools for the agent behind a deny-by-default allowlist: repository content and issues only, with every write paused for explicit human approval. Cannot delete anything or touch account settings.",
+    "description": "Lets the assistant work with GitHub: read repositories, files, issues and pull requests, and — once you approve — create issues, commits, releases and pull requests. Every change asks for your permission first. The plugin cannot delete anything or change your account, organisation or access. You save a GitHub token once in the plugin card.",
     "detail": "docs/DETAIL.md"
   }
 }
