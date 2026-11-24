@@ -65,7 +65,9 @@ function elements(node, found = []) {
 }
 
 /** Load `client.js` the way the browser module loader does. */
-async function loadClient() {
+async function loadClient(options = {}) {
+  const configured = options.configured === true
+  const update = options.update ?? null
   const source = await readFile(join(ROOT, 'client.js'), 'utf8')
   const captured = {}
   const styles = []
@@ -90,7 +92,13 @@ async function loadClient() {
     },
     getComputedStyle: () => ({ backgroundColor: 'rgb(20, 20, 20)' }),
     console: { error: () => {}, warn: () => {}, log: () => {} },
-    fetch: async () => ({ ok: true, json: async () => ({}) }),
+    fetch: async (url) => {
+      // Проверка токена отвечает и состоянием обновления — как настоящий Host.
+      if (configured && String(url) === '/api/github-safe/verify') {
+        return { ok: true, json: async () => ({ ok: true, remaining: 42, update }) }
+      }
+      return { ok: true, json: async () => ({}) }
+    },
     setTimeout: () => 0,
     clearTimeout: () => {},
   }
@@ -133,7 +141,7 @@ async function loadClient() {
     },
     remote: {
       credentials: {
-        describe: async () => ({ value: { GITHUB_TOKEN: { configured: false, writable: true } } }),
+        describe: async () => ({ value: { GITHUB_TOKEN: { configured, writable: true } } }),
         set: async () => {},
         unset: async () => {},
       },
@@ -141,6 +149,8 @@ async function loadClient() {
     },
   }
   module.apply(ctx)
+  // `refresh()` асинхронный: ждём, пока проверка токена отдаст состояние обновления.
+  if (configured) await new Promise(resolve => setTimeout(resolve, 20))
   return { module, locales, registered, injected, styles }
 }
 
@@ -185,6 +195,38 @@ test('client.js: сводка в списке плагинов рисуется 
   const labels = texts(render(element)).join(' ')
   assert.match(labels, /githubSafe\.pageTitle/)
   assert.match(labels, /githubSafe\.unsetBadge/)
+})
+
+test('client.js: плашка обновления называет плагин и не теряет кнопку', async () => {
+  const { registered, locales } = await loadClient({
+    configured: true,
+    update: { status: 'behind', installed: 'old1234', latest: 'new5678', message: '' },
+  })
+  // Локаль: название плагина и фраза «доступно обновление» дают точный заголовок.
+  const ru = locales[0].dictionaries.ru
+  assert.equal(`${ru.pageTitle}: ${ru.updateAvailable}`, 'Доступ к GitHub: доступно обновление')
+
+  const { component } = registered[0]
+  const subject = { subject: { kind: 'bundle', pkg: { name: 'dsh-github-safe' } } }
+
+  // Сводка в списке плагинов: чип называет плагин и показывает обе версии.
+  const summary = texts(render(component({ ...subject, view: 'summary' }))).join(' ')
+  assert.match(summary, /githubSafe\.pageTitle: githubSafe\.updateAvailable: old1234 → new5678/)
+
+  // Карточка: заголовок секции — «<Название>: доступно обновление», чип — версии.
+  const tree = render(component(subject))
+  const all = elements(tree)
+  const heading = all.find(node => node.type === 'h2' && texts(node).join('') === 'githubSafe.pageTitle: githubSafe.updateAvailable')
+  assert.ok(heading, 'заголовок обновления содержит название плагина')
+  const card = all.find(node => node.type === 'section' && node.props?.['aria-label'] === 'githubSafe.pageTitle: githubSafe.updateAvailable')
+  assert.ok(card, 'секция обновления подписана названием плагина')
+  const status = all.find(node => node.props?.role === 'status'
+    && texts(node).join('') === 'githubSafe.pageTitle: old1234 → new5678')
+  assert.ok(status, 'строка версий с названием плагина')
+  const updateButton = all.find(node => node.type === 'button' && texts(node).join('') === 'githubSafe.updateButton')
+  assert.ok(updateButton, 'кнопка «Обновить» на месте')
+  assert.equal(updateButton.props.disabled, false, 'кнопка активна')
+  assert.equal(typeof updateButton.props.onClick, 'function', 'обновление подключено')
 })
 
 test('client.js: страница оформлена по единому стилю', async () => {

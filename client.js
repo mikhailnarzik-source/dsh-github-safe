@@ -50,7 +50,7 @@ window.__ModuleLoader__.load({
       quota: 'Requests left:',
       updateTitle: 'Plugin update',
       updateCurrent: 'up to date',
-      updateAvailable: 'Update available',
+      updateAvailable: 'update available',
       updateUnknown: 'state unknown',
       updateButton: 'Update',
       updateStarting: 'Updating…',
@@ -114,7 +114,7 @@ window.__ModuleLoader__.load({
       quota: 'Осталось запросов:',
       updateTitle: 'Обновление плагина',
       updateCurrent: 'актуально',
-      updateAvailable: 'Доступно обновление',
+      updateAvailable: 'доступно обновление',
       updateUnknown: 'состояние неизвестно',
       updateButton: 'Обновить',
       updateStarting: 'Обновляем…',
@@ -598,7 +598,7 @@ window.__ModuleLoader__.load({
             h('span', { style: snapshot.configured ? S.badgeOn : S.badgeOff },
               snapshot.configured ? t('setBadge') : t('unsetBadge')),
             update.status === 'behind'
-              ? h('span', { style: { ...S.chip, ...S.chipWarn } }, `${t('updateAvailable')}: ${short(update.installed)} → ${short(update.latest)}`)
+              ? h('span', { style: { ...S.chip, ...S.chipWarn } }, `${t('pageTitle')}: ${t('updateAvailable')}: ${short(update.installed)} → ${short(update.latest)}`)
               : null,
           );
         }
@@ -639,8 +639,13 @@ window.__ModuleLoader__.load({
 
         const steps = [t('step1'), t('step2'), t('step3'), t('step4'), t('step5')];
         const update = snapshot.update ?? { status: 'unknown' };
+        // Плашка/секция обновления называет плагин: без заголовка карточки
+        // непонятно, чьё это обновление, особенно если открыто несколько плагинов.
+        const updateHeading = update.status === 'behind'
+          ? `${t('pageTitle')}: ${t('updateAvailable')}`
+          : t('updateTitle');
         const updateText = update.status === 'behind'
-          ? `${t('updateAvailable')}: ${short(update.installed)} → ${short(update.latest)}`
+          ? `${t('pageTitle')}: ${short(update.installed)} → ${short(update.latest)}`
           : update.status === 'current'
             ? `${t('updateCurrent')} (${short(update.installed)})`
             : update.status === 'error'
@@ -766,8 +771,8 @@ window.__ModuleLoader__.load({
           ),
           h(
             'section',
-            { style: S.card, 'aria-label': t('updateTitle') },
-            h('h2', { style: S.sectionTitle }, h('span', { style: S.accent }), t('updateTitle')),
+            { style: S.card, 'aria-label': updateHeading },
+            h('h2', { style: S.sectionTitle }, h('span', { style: S.accent }), updateHeading),
             h(
               'div',
               { style: S.row },
